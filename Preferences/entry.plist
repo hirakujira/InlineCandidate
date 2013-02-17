@@ -1,0 +1,10 @@
+{
+	entry = {
+		bundle = InlineCandidate;
+		cell = PSLinkCell;
+		detail = "InlineCandidateListController";
+		icon = "icon.png";
+		isController = 1;
+		label = InlineCandidate;
+	};
+}
