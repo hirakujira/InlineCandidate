@@ -10,6 +10,14 @@
 @property(assign, nonatomic) BOOL showsCandidateBar;
 @end
 
+@interface UIKBTree 
+@property(retain, nonatomic) NSMutableDictionary* cache;
+@property(retain, nonatomic) NSMutableArray* subtrees;
+@property(retain, nonatomic) NSMutableDictionary* properties;
+@property(retain, nonatomic) NSString* name;
+@property(assign, nonatomic) int type;
+@end
+
 @interface TWTweetComposeViewController : UIViewController
 - (id)init;
 -(void)keyboardWillShow:(id)keyboard;
@@ -70,9 +78,9 @@ static NSMutableDictionary* plistDict = [[NSMutableDictionary alloc] initWithCon
 			self.showsCandidateBar = NO;
 			self.showsCandidateInline = YES;
 		}
-		
 		return enableBar;
 	}
+	return enableBar;
 }
 
 %end
@@ -94,8 +102,27 @@ static NSMutableDictionary* plistDict = [[NSMutableDictionary alloc] initWithCon
 		return YES;
 	else
 		return %orig;
+	return YES;
 }
 
+-(BOOL)showsCandidateBar
+{
+	NSString *identifier = [[NSBundle mainBundle] bundleIdentifier];
+
+	mode = [[plistDict objectForKey:@"mode"] intValue];
+	if ([[plistDict objectForKey:[@"Bar-" stringByAppendingString:identifier]] boolValue]||[[plistDict objectForKey:[@"Float-" stringByAppendingString:identifier]] boolValue])
+	{
+		if ([[plistDict objectForKey:[@"Bar-" stringByAppendingString:identifier]] boolValue] && isTweetView == NO)
+			return %orig;
+		else if ([[plistDict objectForKey:[@"Float-" stringByAppendingString:identifier]] boolValue] && isTweetView == NO)
+			return NO;
+	}
+	else if (isTweetView == NO && mode == 0)
+		return %orig;
+	else
+		return %orig;
+	return %orig;
+}
 %end %end
 
 %hook TWTweetComposeViewController
@@ -106,10 +133,8 @@ static NSMutableDictionary* plistDict = [[NSMutableDictionary alloc] initWithCon
 }
 %end
 
-
-
 //==============================================================================
-%hook SpringBoard %group GSetPreferences
+%group GSetPreferences %hook SpringBoard 
 
 - (void)applicationDidFinishLaunching:(id)application
 {
@@ -128,8 +153,6 @@ static NSMutableDictionary* plistDict = [[NSMutableDictionary alloc] initWithCon
 %end %end
 
 //==============================================================================
-#define kCFCoreFoundationVersionNumber_iOS_5_0 661.00
-
 __attribute__((constructor)) static void init()
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
