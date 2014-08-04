@@ -3,6 +3,7 @@
 #define kCFCoreFoundationVersionNumber_iOS_5_0 675.00
 #define kCFCoreFoundationVersionNumber_iOS_5_1 690.10
 #define kCFCoreFoundationVersionNumber_iOS_6_0 793.00
+#define kCFCoreFoundationVersionNumber_iOS_7_0 847.20
 
 @interface UIKeyboardImpl : UIView
 + (id)activeInstance;
@@ -22,11 +23,25 @@
 - (id)init;
 -(void)keyboardWillShow:(id)keyboard;
 @end
+
+@interface UIKeyboardCandidateGridCell : UIView
+@property(assign, nonatomic) int candidatesVisualStyle;
+@end
+
+@interface UIKBRenderConfig 
+@property(readonly, assign, nonatomic) BOOL whiteText;
+@end
+
+@interface UIView (InlineCandidate)
+@property(readonly, assign, nonatomic) UIKBRenderConfig* _inheritedRenderConfig;
+@end
 //==============================================================================
 static BOOL isTweetView = NO;
 static BOOL enableBar;
 static int mode;
 static NSMutableDictionary* plistDict = [[NSMutableDictionary alloc] initWithContentsOfFile:@"/var/mobile/Library/Preferences/com.hiraku.inlinecandidate.plist"];
+static BOOL noWhiteText = YES;
+static BOOL showFloating = NO;
 
 %hook UIKeyboardCandidateBar
 -(CALayer *)layer
@@ -85,6 +100,25 @@ static NSMutableDictionary* plistDict = [[NSMutableDictionary alloc] initWithCon
 
 %end
 
+%group GiOS7WhiteText
+%hook UIKeyboardCandidateGridCell
+-(void)drawText {
+	if (showFloating == YES)
+		noWhiteText = NO;
+	%orig;
+}
+%end
+
+%hook UIKBRenderConfig
+-(BOOL)whiteText {
+	if (noWhiteText == NO)
+		return NO;
+	noWhiteText = YES;
+	return %orig;
+}
+%end
+%end
+
 %group GiOS6 %hook UIKeyboardImpl
 -(BOOL)showsCandidateInline
 {
@@ -95,18 +129,22 @@ static NSMutableDictionary* plistDict = [[NSMutableDictionary alloc] initWithCon
 	{
 		if ([[plistDict objectForKey:[@"Bar-" stringByAppendingString:identifier]] boolValue] && isTweetView == NO)
 			return NO;
-		else if ([[plistDict objectForKey:[@"Float-" stringByAppendingString:identifier]] boolValue] && isTweetView == NO)
+		else if ([[plistDict objectForKey:[@"Float-" stringByAppendingString:identifier]] boolValue] && isTweetView == NO) {
+			showFloating = YES;
 			return YES;
+		}
 	}
-	else if (isTweetView == NO && mode == 1)
+	else if (isTweetView == NO && mode == 1) {
+		showFloating = YES;
 		return YES;
+	}
 	else
 		return %orig;
+	showFloating = YES;
 	return YES;
 }
 
--(BOOL)showsCandidateBar
-{
+-(BOOL)showsCandidateBar {
 	NSString *identifier = [[NSBundle mainBundle] bundleIdentifier];
 
 	mode = [[plistDict objectForKey:@"mode"] intValue];
@@ -126,8 +164,7 @@ static NSMutableDictionary* plistDict = [[NSMutableDictionary alloc] initWithCon
 %end %end
 
 %hook TWTweetComposeViewController
--(void)keyboardWillShow:(id)keyboard
-{
+-(void)keyboardWillShow:(id)keyboard {
 	isTweetView = YES;
 	%orig;
 }
@@ -168,6 +205,8 @@ __attribute__((constructor)) static void init()
 
     if (kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_6_0)
 	    %init(GiOS6);
+	if (kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_7_0)
+		%init(GiOS7WhiteText);
 
     [pool release];
 }
