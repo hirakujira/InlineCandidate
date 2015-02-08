@@ -47,15 +47,17 @@ static BOOL showFloating = NO;
 -(CALayer *)layer
 {
 	CALayer* view = %orig;	
-	if(mode == 0)
-	{	
+	if(mode == 0) {
 		float candidcateBarOpacity = [[plistDict objectForKey:@"candidcateBarOpacity"] floatValue];
 
 		NSFileManager *fileManager = [[NSFileManager alloc] init];
- 		if([fileManager fileExistsAtPath:@"/Library/MobileSubstrate/DynamicLibraries/iAcces.dylib"] && [fileManager fileExistsAtPath:@"/Library/MobileSubstrate/DynamicLibraries/notweetkb.dylib"] && isTweetView == YES)
+ 		if(	[fileManager fileExistsAtPath:@"/Library/MobileSubstrate/DynamicLibraries/iAcces.dylib"] && 
+ 			[fileManager fileExistsAtPath:@"/Library/MobileSubstrate/DynamicLibraries/notweetkb.dylib"] && isTweetView == YES) {
 			view.opacity = 0;
-		else
+ 		}
+		else {
 			view.opacity = candidcateBarOpacity;
+		}
 	}
 	return view;
 }
@@ -68,23 +70,20 @@ static BOOL showFloating = NO;
 	
 	NSString *identifier = [[NSBundle mainBundle] bundleIdentifier];
 	NSFileManager *fileManager2 = [[NSFileManager alloc] init];
- 	if([fileManager2 fileExistsAtPath:@"/Library/MobileSubstrate/DynamicLibraries/iAcces.dylib"]&&[fileManager2 fileExistsAtPath:@"/Library/MobileSubstrate/DynamicLibraries/notweetkb.dylib"] && isTweetView == YES)
- 	{
+ 	if(	[fileManager2 fileExistsAtPath:@"/Library/MobileSubstrate/DynamicLibraries/iAcces.dylib"] &&
+ 		[fileManager2 fileExistsAtPath:@"/Library/MobileSubstrate/DynamicLibraries/notweetkb.dylib"] && isTweetView == YES) {
 		return YES;
  	}
-
  	else
  	{
 		mode = [[plistDict objectForKey:@"mode"] intValue];
 		if ([[plistDict objectForKey:[@"Bar-" stringByAppendingString:identifier]] boolValue]||[[plistDict objectForKey:[@"Float-" stringByAppendingString:identifier]] boolValue])
 		{
-			if ([[plistDict objectForKey:[@"Bar-" stringByAppendingString:identifier]] boolValue] && isTweetView == NO && self.showsCandidateBar == NO)
-			{
+			if ([[plistDict objectForKey:[@"Bar-" stringByAppendingString:identifier]] boolValue] && isTweetView == NO && self.showsCandidateBar == NO) {
 				self.showsCandidateBar = YES;
 				self.showsCandidateInline = NO;
 			}
-			else if ([[plistDict objectForKey:[@"Float-" stringByAppendingString:identifier]] boolValue] && isTweetView == NO && self.showsCandidateBar == YES)
-			{
+			else if ([[plistDict objectForKey:[@"Float-" stringByAppendingString:identifier]] boolValue] && isTweetView == NO && self.showsCandidateBar == YES) {
 				self.showsCandidateBar = NO;
 				self.showsCandidateInline = YES;
 			}
@@ -103,16 +102,18 @@ static BOOL showFloating = NO;
 %group GiOS7WhiteText
 %hook UIKeyboardCandidateGridCell
 -(void)drawText {
-	if (showFloating == YES)
+	if (showFloating == YES) {
 		noWhiteText = NO;
+	}
 	%orig;
 }
 %end
 
 %hook UIKBRenderConfig
 -(BOOL)whiteText {
-	if (noWhiteText == NO)
+	if (noWhiteText == NO) {
 		return NO;
+	}
 	noWhiteText = YES;
 	return %orig;
 }
@@ -127,8 +128,9 @@ static BOOL showFloating = NO;
 	mode = [[plistDict objectForKey:@"mode"] intValue];
 	if ([[plistDict objectForKey:[@"Bar-" stringByAppendingString:identifier]] boolValue]||[[plistDict objectForKey:[@"Float-" stringByAppendingString:identifier]] boolValue])
 	{
-		if ([[plistDict objectForKey:[@"Bar-" stringByAppendingString:identifier]] boolValue] && isTweetView == NO)
+		if ([[plistDict objectForKey:[@"Bar-" stringByAppendingString:identifier]] boolValue] && isTweetView == NO) {
 			return NO;
+		}
 		else if ([[plistDict objectForKey:[@"Float-" stringByAppendingString:identifier]] boolValue] && isTweetView == NO) {
 			showFloating = YES;
 			return YES;
@@ -138,8 +140,9 @@ static BOOL showFloating = NO;
 		showFloating = YES;
 		return YES;
 	}
-	else
+	else {
 		return %orig;
+	}
 	showFloating = YES;
 	return YES;
 }
@@ -150,15 +153,19 @@ static BOOL showFloating = NO;
 	mode = [[plistDict objectForKey:@"mode"] intValue];
 	if ([[plistDict objectForKey:[@"Bar-" stringByAppendingString:identifier]] boolValue]||[[plistDict objectForKey:[@"Float-" stringByAppendingString:identifier]] boolValue])
 	{
-		if ([[plistDict objectForKey:[@"Bar-" stringByAppendingString:identifier]] boolValue] && isTweetView == NO)
+		if ([[plistDict objectForKey:[@"Bar-" stringByAppendingString:identifier]] boolValue] && isTweetView == NO) {
 			return %orig;
-		else if ([[plistDict objectForKey:[@"Float-" stringByAppendingString:identifier]] boolValue] && isTweetView == NO)
+		}
+		else if ([[plistDict objectForKey:[@"Float-" stringByAppendingString:identifier]] boolValue] && isTweetView == NO) {
 			return NO;
+		}
 	}
-	else if (isTweetView == NO && mode == 0)
+	else if (isTweetView == NO && mode == 0) {
 		return %orig;
-	else
+	}
+	else {
 		return %orig;
+	}
 	return %orig;
 }
 %end %end
@@ -203,10 +210,12 @@ __attribute__((constructor)) static void init()
         %init(GSetPreferences);
     }
 
-    if (kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_6_0)
+    if (kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_6_0) {
 	    %init(GiOS6);
-	if (kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_7_0)
+    }
+	if (kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_7_0) {
 		%init(GiOS7WhiteText);
+	}
 
     [pool release];
 }
