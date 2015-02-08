@@ -1,5 +1,3 @@
-#import <objc/runtime.h>
-
 #define kCFCoreFoundationVersionNumber_iOS_5_0 675.00
 #define kCFCoreFoundationVersionNumber_iOS_5_1 690.10
 #define kCFCoreFoundationVersionNumber_iOS_6_0 793.00
@@ -211,7 +209,7 @@ __attribute__((constructor)) static void init()
     }
 
     if (kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_6_0) {
-	    %init(GiOS6);
+    	%init(GiOS6);
     }
 	if (kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_7_0) {
 		%init(GiOS7WhiteText);
